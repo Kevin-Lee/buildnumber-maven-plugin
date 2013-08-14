@@ -17,7 +17,6 @@ import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
-import org.apache.maven.project.MavenProject;
 import org.elixirian.kommonlee.collect.immutable.ImmutableList;
 import org.elixirian.kommonlee.io.ByteArrayConsumingContainer;
 import org.elixirian.kommonlee.io.DataConsumers;
@@ -56,9 +55,6 @@ public class BuildNumberAdder extends AbstractMojo
 
   @Parameter(defaultValue = "buildNumber.ini")
   private String outputBuildNumberFileName;
-
-  @Parameter(readonly = true, required = true, defaultValue = "${project}")
-  private MavenProject mavenProject;
 
   @Override
   public void execute() throws MojoExecutionException, MojoFailureException
