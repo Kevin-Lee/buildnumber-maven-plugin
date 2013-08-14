@@ -14,7 +14,6 @@ import java.util.Properties;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
-import org.apache.maven.plugins.annotations.Execute;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
@@ -39,17 +38,16 @@ import org.elixirian.kommonlee.nio.util.NioUtil;
  */
 @Mojo(
 // mvn buildnumber:for-deploy
-name = "deploy", defaultPhase = LifecyclePhase.TEST)
-@Execute(goal = "deploy", phase = LifecyclePhase.TEST)
+name = "for-deploy", defaultPhase = LifecyclePhase.TEST)
 public class BuildNumberAdder extends AbstractMojo
 {
-  @Parameter(required = true)
+  @Parameter
   private File versionInfoFile;
 
-  @Parameter(required = true, defaultValue = "version")
+  @Parameter(defaultValue = "version")
   private String versionKey;
 
-  @Parameter(required = true)
+  @Parameter
   private File buildNumberSourceFile;
 
   @Parameter(defaultValue = "${project.build.outputDirectory}")
@@ -58,9 +56,17 @@ public class BuildNumberAdder extends AbstractMojo
   @Parameter(defaultValue = "buildNumber.ini")
   private String outputBuildNumberFileName;
 
+  @Parameter(defaultValue = "false")
+  private boolean skip;
+
   @Override
   public void execute() throws MojoExecutionException, MojoFailureException
   {
+    if (skip)
+    {
+      return;
+    }
+
     if (!versionInfoFile.exists())
     {
       throw new MojoExecutionException("versionInfoFile does not exist. versionInfoFile: " + versionInfoFile.getPath());
