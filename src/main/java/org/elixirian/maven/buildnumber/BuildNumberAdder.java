@@ -151,8 +151,17 @@ public class BuildNumberAdder extends AbstractMojo
     NioUtil.writeFile(file, IoCommonConstants.BUFFER_SIZE_8Ki,
         DataProducers.newSimpleByteArrayProducer(buildNumberBytes));
 
+    final StringBuilder stringBuilder = new StringBuilder();
+    for (final Integer n : projectVersionNumbersFromBuildNumberFile)
+    {
+      stringBuilder.append(n)
+          .append(".");
+    }
+
     NioUtil.writeFile(buildNumberSourceFile, IoCommonConstants.BUFFER_SIZE_8Ki,
-        DataProducers.newSimpleByteArrayProducer(buildNumberBytes));
+        DataProducers.newSimpleByteArrayProducer(stringBuilder.append(buildNumber)
+            .toString()
+            .getBytes()));
 
   }
 
