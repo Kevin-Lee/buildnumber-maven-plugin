@@ -6,7 +6,7 @@
 
   <groupId>org.elixirian.maven</groupId>
   <artifactId>buildnumber-maven-plugin</artifactId>
-  <version>0.0.5-SNAPSHOT</version>
+  <version>0.0.6-SNAPSHOT</version>
 
   <packaging>maven-plugin</packaging>
 
@@ -148,6 +148,12 @@
 <!-- 	    <artifactId>maven-project</artifactId> -->
 <!--     	<version>2.0.11</version> -->
 <!-- 		</dependency> -->
+
+<!--     <dependency> -->
+<!--       <groupId>org.sonatype.plexus</groupId> -->
+<!--       <artifactId>plexus-build-api</artifactId> -->
+<!--       <version>0.0.7</version> -->
+<!--     </dependency> -->
 
 		<dependency>
 			<groupId>org.elixirian</groupId>
