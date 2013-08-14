@@ -57,16 +57,11 @@ public class BuildNumberAdder extends AbstractMojo
   private String outputBuildNumberFileName;
 
   @Parameter(defaultValue = "false")
-  private boolean skip;
+  private boolean skipIfBuildNumberSourceFileNotFound;
 
   @Override
   public void execute() throws MojoExecutionException, MojoFailureException
   {
-    if (skip)
-    {
-      return;
-    }
-
     if (!versionInfoFile.exists())
     {
       throw new MojoExecutionException("versionInfoFile does not exist. versionInfoFile: " + versionInfoFile.getPath());
@@ -78,11 +73,19 @@ public class BuildNumberAdder extends AbstractMojo
 
     if (null == buildNumberSourceFile)
     {
+      if (skipIfBuildNumberSourceFileNotFound)
+      {
+        return;
+      }
       throw new MojoExecutionException(
           "buildNumberSourceFile is not specified. <buildNumberSourceFile>/path/to/build-number-source-file</buildNumberSourceFile>");
     }
     if (!buildNumberSourceFile.exists())
     {
+      if (skipIfBuildNumberSourceFileNotFound)
+      {
+        return;
+      }
       throw new MojoExecutionException("buildNumberSourceFile does not exist. buildNumberSourceFile: "
           + buildNumberSourceFile.getPath());
     }
