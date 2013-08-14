@@ -14,7 +14,6 @@ import java.util.Properties;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
-import org.apache.maven.plugins.annotations.Execute;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
@@ -39,8 +38,7 @@ import org.elixirian.kommonlee.nio.util.NioUtil;
  */
 @Mojo(
 // mvn buildnumber:for-deploy
-name = "for-deploy", defaultPhase = LifecyclePhase.GENERATE_RESOURCES)
-@Execute(goal = "package", phase = LifecyclePhase.GENERATE_RESOURCES)
+name = "for-deploy", defaultPhase = LifecyclePhase.TEST)
 public class BuildNumberAdder extends AbstractMojo
 {
   @Parameter(required = true)
@@ -125,7 +123,11 @@ public class BuildNumberAdder extends AbstractMojo
 
     final String projectVersionString = (String) versionInfo.get(versionKey);
 
+    System.out.println("[BuildNumberAdder] projectVersionString: " + projectVersionString);
+
     final Version projectVersion = Version.newInstance(projectVersionString);
+
+    System.out.println("[BuildNumberAdder] projectVersion: " + projectVersion);
 
     final int takeHowMany = version.length() - 1;
 
@@ -141,6 +143,8 @@ public class BuildNumberAdder extends AbstractMojo
 
     final int buildNumber = lastNumber + 1;
 
+    System.out.println("[BuildNumberAdder] buildNumber: " + buildNumber);
+
     final File file = new File(outputDirectory, outputBuildNumberFileName);
 
     final byte[] buildNumberBytes = String.valueOf(buildNumber)
@@ -150,16 +154,19 @@ public class BuildNumberAdder extends AbstractMojo
         DataProducers.newSimpleByteArrayProducer(buildNumberBytes));
 
     final StringBuilder stringBuilder = new StringBuilder();
-    for (final Integer n : projectVersionNumbersFromBuildNumberFile)
+    for (final Integer n : projectVersionNumbers)
     {
       stringBuilder.append(n)
           .append(".");
     }
 
+    final String newVersionForSource = stringBuilder.append(buildNumber)
+        .toString();
+
+    System.out.println("[BuildNumberAdder] newVersionForSource: " + newVersionForSource);
+
     NioUtil.writeFile(buildNumberSourceFile, IoCommonConstants.BUFFER_SIZE_8Ki,
-        DataProducers.newSimpleByteArrayProducer(stringBuilder.append(buildNumber)
-            .toString()
-            .getBytes()));
+        DataProducers.newSimpleByteArrayProducer(newVersionForSource.getBytes()));
 
   }
 
