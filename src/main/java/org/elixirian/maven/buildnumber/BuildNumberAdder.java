@@ -14,6 +14,7 @@ import java.util.Properties;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
+import org.apache.maven.plugins.annotations.Execute;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
@@ -38,7 +39,8 @@ import org.elixirian.kommonlee.nio.util.NioUtil;
  */
 @Mojo(
 // mvn buildnumber:for-deploy
-name = "for-deploy", defaultPhase = LifecyclePhase.PROCESS_RESOURCES)
+name = "for-deploy", defaultPhase = LifecyclePhase.GENERATE_RESOURCES)
+@Execute(goal = "package", phase = LifecyclePhase.GENERATE_RESOURCES)
 public class BuildNumberAdder extends AbstractMojo
 {
   @Parameter(required = true)
