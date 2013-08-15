@@ -70,6 +70,7 @@ public class BuildNumberAdder extends AbstractMojo
   public void execute() throws MojoExecutionException, MojoFailureException
   {
     final Log logger = getLog();
+    logger.info("dontRunIfThisFolderDoesNotExist: " + dontRunIfThisFolderDoesNotExist);
 
     if (null == dontRunIfThisFolderDoesNotExist)
     {
