@@ -63,9 +63,34 @@ public class BuildNumberAdder extends AbstractMojo
   @Parameter(defaultValue = "true")
   private boolean dontRunIfOutputBuildNumberFileAlreadyExists;
 
+  @Parameter(required = false)
+  private File dontRunIfThisFolderDoesNotExist;
+
   @Override
   public void execute() throws MojoExecutionException, MojoFailureException
   {
+    final Log logger = getLog();
+
+    if (null == dontRunIfThisFolderDoesNotExist)
+    {
+      logger.debug("dontRunIfThisFolderDoesNotExist is null.");
+    }
+    else if (dontRunIfThisFolderDoesNotExist.exists())
+    {
+      if (dontRunIfThisFolderDoesNotExist.isDirectory())
+      {
+        logger.debug("dontRunIfThisFolderDoesNotExist exists and is directory.");
+      }
+      else
+      {
+        logger.debug("dontRunIfThisFolderDoesNotExist exists and is NOT directory.");
+      }
+    }
+    else
+    {
+      logger.debug("dontRunIfThisFolderDoesNotExist does NOT exist.");
+    }
+
     if (!versionInfoFile.exists())
     {
       throw new MojoExecutionException("versionInfoFile does not exist. versionInfoFile: " + versionInfoFile.getPath());
@@ -110,7 +135,6 @@ public class BuildNumberAdder extends AbstractMojo
     }
 
     final File outputFile = new File(outputDirectory, outputBuildNumberFileName);
-    final Log logger = getLog();
     if (outputFile.exists() && dontRunIfOutputBuildNumberFileAlreadyExists)
     {
       logger.debug("outputFile (" + outputFile.getPath()
