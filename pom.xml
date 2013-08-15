@@ -6,7 +6,7 @@
 
   <groupId>org.elixirian.maven</groupId>
   <artifactId>buildnumber-maven-plugin</artifactId>
-  <version>0.0.14-SNAPSHOT</version>
+  <version>0.0.15-SNAPSHOT</version>
 
   <packaging>maven-plugin</packaging>
 
@@ -143,11 +143,11 @@
 	    <artifactId>maven-plugin-annotations</artifactId>
 	    <version>3.2</version>
 		</dependency>
-<!-- 		<dependency> -->
-<!-- 	    <groupId>org.apache.maven</groupId> -->
-<!-- 	    <artifactId>maven-project</artifactId> -->
-<!--     	<version>2.0.11</version> -->
-<!-- 		</dependency> -->
+		<dependency>
+	    <groupId>org.apache.maven</groupId>
+	    <artifactId>maven-project</artifactId>
+    	<version>2.0.11</version>
+		</dependency>
 
 <!--     <dependency> -->
 <!--       <groupId>org.sonatype.plexus</groupId> -->

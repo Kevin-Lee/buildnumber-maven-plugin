@@ -18,6 +18,7 @@ import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
+import org.apache.maven.project.MavenProject;
 import org.elixirian.kommonlee.collect.immutable.ImmutableList;
 import org.elixirian.kommonlee.io.ByteArrayConsumingContainer;
 import org.elixirian.kommonlee.io.DataConsumers;
@@ -64,7 +65,10 @@ public class BuildNumberAdder extends AbstractMojo
   private boolean dontRunIfOutputBuildNumberFileAlreadyExists;
 
   @Parameter(required = false)
-  private File dontRunIfThisFolderDoesNotExist;
+  private String parentsMustContain;
+
+  @Parameter(defaultValue = "${project}", readonly = true, required = true)
+  private MavenProject mavenProject;
 
   @Override
   public void execute() throws MojoExecutionException, MojoFailureException
@@ -123,30 +127,23 @@ public class BuildNumberAdder extends AbstractMojo
       return;
     }
 
-    if (null == dontRunIfThisFolderDoesNotExist)
+    if (null == parentsMustContain)
     {
-      logger.info("dontRunIfThisFolderDoesNotExist is null so ignore this option.");
+      logger.info("parentsMustContain is null so ignore this option.");
     }
     else
     {
-      logger.info("dontRunIfThisFolderDoesNotExist: " + dontRunIfThisFolderDoesNotExist.getPath());
-      if (dontRunIfThisFolderDoesNotExist.exists())
+      final String parentFolder = mavenProject.getBasedir()
+          .getParent();
+      if (parentFolder.contains(parentsMustContain))
       {
-        if (dontRunIfThisFolderDoesNotExist.isDirectory())
-        {
-          logger.info("dontRunIfThisFolderDoesNotExist exists and is a directory so keep running!.");
-        }
-        else
-        {
-          logger.info("dontRunIfThisFolderDoesNotExist exists but is NOT a directory so stop running this plugin!.\n"
-              + "Running this buildnumber plugin has been cancelled!!!");
-          return;
-        }
+        logger.info("parentFolder (" + parentFolder + ") contains parentsMustContain (" + parentsMustContain
+            + ") so keep running!.");
       }
       else
       {
-        logger.info("dontRunIfThisFolderDoesNotExist does NOT exist so stop running this plugin!.\n"
-            + "Running this buildnumber plugin has been cancelled!!!");
+        logger.info("parentFolder (" + parentFolder + ") does NOT contains parentsMustContain (" + parentsMustContain
+            + ") so stop running this plugin!.\n" + "Running this buildnumber plugin has been cancelled!!!");
         return;
       }
     }
