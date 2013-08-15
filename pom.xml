@@ -6,7 +6,7 @@
 
   <groupId>org.elixirian.maven</groupId>
   <artifactId>buildnumber-maven-plugin</artifactId>
-  <version>0.0.11-SNAPSHOT</version>
+  <version>0.0.12-SNAPSHOT</version>
 
   <packaging>maven-plugin</packaging>
 
