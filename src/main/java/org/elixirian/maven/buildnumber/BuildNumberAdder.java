@@ -70,27 +70,6 @@ public class BuildNumberAdder extends AbstractMojo
   public void execute() throws MojoExecutionException, MojoFailureException
   {
     final Log logger = getLog();
-    logger.info("dontRunIfThisFolderDoesNotExist: " + dontRunIfThisFolderDoesNotExist);
-
-    if (null == dontRunIfThisFolderDoesNotExist)
-    {
-      logger.info("dontRunIfThisFolderDoesNotExist is null.");
-    }
-    else if (dontRunIfThisFolderDoesNotExist.exists())
-    {
-      if (dontRunIfThisFolderDoesNotExist.isDirectory())
-      {
-        logger.info("dontRunIfThisFolderDoesNotExist exists and is directory.");
-      }
-      else
-      {
-        logger.info("dontRunIfThisFolderDoesNotExist exists and is NOT directory.");
-      }
-    }
-    else
-    {
-      logger.info("dontRunIfThisFolderDoesNotExist does NOT exist.");
-    }
 
     if (!versionInfoFile.exists())
     {
@@ -142,6 +121,34 @@ public class BuildNumberAdder extends AbstractMojo
           + ") already exists and dontRunIfOutputBuildNumberFileAlreadyExists parameter value is "
           + dontRunIfOutputBuildNumberFileAlreadyExists);
       return;
+    }
+
+    if (null == dontRunIfThisFolderDoesNotExist)
+    {
+      logger.info("dontRunIfThisFolderDoesNotExist is null so ignore this option.");
+    }
+    else
+    {
+      logger.info("dontRunIfThisFolderDoesNotExist: " + dontRunIfThisFolderDoesNotExist.getPath());
+      if (dontRunIfThisFolderDoesNotExist.exists())
+      {
+        if (dontRunIfThisFolderDoesNotExist.isDirectory())
+        {
+          logger.info("dontRunIfThisFolderDoesNotExist exists and is a directory so keep running!.");
+        }
+        else
+        {
+          logger.info("dontRunIfThisFolderDoesNotExist exists but is NOT a directory so stop running this plugin!.\n"
+              + "Running this buildnumber plugin has been cancelled!!!");
+          return;
+        }
+      }
+      else
+      {
+        logger.info("dontRunIfThisFolderDoesNotExist does NOT exist so stop running this plugin!.\n"
+            + "Running this buildnumber plugin has been cancelled!!!");
+        return;
+      }
     }
 
     final Properties versionInfo = new Properties();
@@ -217,5 +224,4 @@ public class BuildNumberAdder extends AbstractMojo
         DataProducers.newSimpleByteArrayProducer(newVersionForSource.getBytes()));
 
   }
-
 }
