@@ -14,7 +14,7 @@ import java.util.Properties;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
-import org.apache.maven.plugins.annotations.Execute;
+import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
@@ -59,6 +59,9 @@ public class BuildNumberAdder extends AbstractMojo
 
   @Parameter(defaultValue = "false")
   private boolean skipIfBuildNumberSourceFileNotFound;
+
+  @Parameter(defaultValue = "true")
+  private boolean dontRunIfOutputBuildNumberFileAlreadyExists;
 
   @Override
   public void execute() throws MojoExecutionException, MojoFailureException
@@ -106,6 +109,16 @@ public class BuildNumberAdder extends AbstractMojo
           + outputDirectory.getPath());
     }
 
+    final File outputFile = new File(outputDirectory, outputBuildNumberFileName);
+    final Log logger = getLog();
+    if (outputFile.exists() && dontRunIfOutputBuildNumberFileAlreadyExists)
+    {
+      logger.debug("outputFile (" + outputFile.getPath()
+          + ") already exists and dontRunIfOutputBuildNumberFileAlreadyExists parameter value is "
+          + dontRunIfOutputBuildNumberFileAlreadyExists);
+      return;
+    }
+
     final Properties versionInfo = new Properties();
     try
     {
@@ -135,11 +148,11 @@ public class BuildNumberAdder extends AbstractMojo
 
     final String projectVersionString = (String) versionInfo.get(versionKey);
 
-    getLog().info("[BuildNumberAdder] projectVersionString: " + projectVersionString);
+    logger.info("[BuildNumberAdder] projectVersionString: " + projectVersionString);
 
     final Version projectVersion = Version.newInstance(projectVersionString);
 
-    getLog().info("[BuildNumberAdder] projectVersion: " + projectVersion);
+    logger.info("[BuildNumberAdder] projectVersion: " + projectVersion);
 
     final int takeHowMany = version.length() - 1;
 
@@ -155,14 +168,12 @@ public class BuildNumberAdder extends AbstractMojo
 
     final int buildNumber = lastNumber + 1;
 
-    getLog().info("[BuildNumberAdder] buildNumber: " + buildNumber);
-
-    final File file = new File(outputDirectory, outputBuildNumberFileName);
+    logger.info("[BuildNumberAdder] buildNumber: " + buildNumber);
 
     final byte[] buildNumberBytes = String.valueOf(buildNumber)
         .getBytes();
 
-    NioUtil.writeFile(file, IoCommonConstants.BUFFER_SIZE_8Ki,
+    NioUtil.writeFile(outputFile, IoCommonConstants.BUFFER_SIZE_8Ki,
         DataProducers.newSimpleByteArrayProducer(buildNumberBytes));
 
     final StringBuilder stringBuilder = new StringBuilder();
@@ -175,7 +186,7 @@ public class BuildNumberAdder extends AbstractMojo
     final String newVersionForSource = stringBuilder.append(buildNumber)
         .toString();
 
-    getLog().info("[BuildNumberAdder] newVersionForSource: " + newVersionForSource);
+    logger.info("[BuildNumberAdder] newVersionForSource: " + newVersionForSource);
 
     NioUtil.writeFile(buildNumberSourceFile, IoCommonConstants.BUFFER_SIZE_8Ki,
         DataProducers.newSimpleByteArrayProducer(newVersionForSource.getBytes()));
