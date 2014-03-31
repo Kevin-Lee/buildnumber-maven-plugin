@@ -9,6 +9,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.List;
 import java.util.Properties;
 
 import org.apache.maven.plugin.AbstractMojo;
@@ -34,7 +35,7 @@ import org.elixirian.kommonlee.nio.util.NioUtil;
  *  /        \ /  _____/\    //   //   __   / /    /___/  _____/  _____/
  * /____/\____\\_____/   \__//___//___/ /__/ /________/\_____/ \_____/
  * </pre>
- *
+ * 
  * @author Lee, SeongHyun (Kevin)
  * @version 0.0.1 (2013-08-13)
  */
@@ -65,7 +66,7 @@ public class BuildNumberAdder extends AbstractMojo
   private boolean dontRunIfOutputBuildNumberFileAlreadyExists;
 
   @Parameter(required = false)
-  private String parentsMustContain;
+  private List<String> parentsMustContainAnyOf;
 
   @Parameter(defaultValue = "${project}", readonly = true, required = true)
   private MavenProject mavenProject;
@@ -127,31 +128,41 @@ public class BuildNumberAdder extends AbstractMojo
       return;
     }
 
-    if (null == parentsMustContain)
+    if (null == parentsMustContainAnyOf || parentsMustContainAnyOf.isEmpty())
     {
-      logger.info("parentsMustContain is null so ignore this option.");
+      logger.info("parentsMustContainAnyOf is null so ignore this option.");
     }
     else
     {
       final String parentFolder = mavenProject.getBasedir()
           .getParent();
-      if (parentFolder.contains(parentsMustContain))
+
+      boolean found = false;
+      for (final String parentsMustContain : parentsMustContainAnyOf)
       {
-        logger.info("parentFolder (" + parentFolder + ") contains parentsMustContain (" + parentsMustContain
-            + ") so keep running!.");
+        if (parentFolder.contains(parentsMustContain))
+        {
+          logger.info("parentFolder (" + parentFolder + ") contains one of 'parentsMustContainAnyOf' values ("
+              + parentsMustContain + " of " + parentsMustContainAnyOf + ") so keep running!.");
+          found = true;
+          break;
+        }
       }
-      else
+      if (!found)
       {
-        logger.info("parentFolder (" + parentFolder + ") does NOT contains parentsMustContain (" + parentsMustContain
-            + ") so stop running this plugin!.\n" + "Running this buildnumber plugin has been cancelled!!!");
+        logger.info("parentFolder (" + parentFolder + ") does NOT contain any of 'parentsMustContainAnyOf' values ("
+            + parentsMustContainAnyOf + ") so stop running this plugin!.\n"
+            + "Running this buildnumber plugin has been cancelled!!!");
         return;
       }
     }
 
     final Properties versionInfo = new Properties();
+    FileInputStream inStream = null;
     try
     {
-      versionInfo.load(new FileInputStream(versionInfoFile));
+      inStream = new FileInputStream(versionInfoFile);
+      versionInfo.load(inStream);
     }
     catch (final FileNotFoundException e)
     {
@@ -163,14 +174,18 @@ public class BuildNumberAdder extends AbstractMojo
       throw new MojoExecutionException("Failed to read the versionInfoFile. versionInfoFile: "
           + versionInfoFile.getPath(), e);
     }
+    finally
+    {
+      NioUtil.closeQuietly(inStream);
+    }
 
     final ByteArrayConsumingContainer byteArrayConsumingContainer = DataConsumers.newByteArrayConsumingContainer();
     NioUtil.readFile(buildNumberSourceFile, IoCommonConstants.BUFFER_SIZE_8Ki, byteArrayConsumingContainer);
 
     final String versionNumber = byteArrayConsumingContainer.toString();
-    final Version version = Version.newInstance(versionNumber);
+    final NumberBasedVersion numberBasedVersion = NumberBasedVersion.newInstance(versionNumber);
 
-    if (version.isEmpty())
+    if (numberBasedVersion.isEmpty())
     {
       throw new MojoExecutionException("No version info is found in the file: " + buildNumberSourceFile.getPath());
     }
@@ -179,19 +194,19 @@ public class BuildNumberAdder extends AbstractMojo
 
     logger.info("[BuildNumberAdder] projectVersionString: " + projectVersionString);
 
-    final Version projectVersion = Version.newInstance(projectVersionString);
+    final NumberBasedVersion projectVersion = NumberBasedVersion.newInstance(projectVersionString);
 
     logger.info("[BuildNumberAdder] projectVersion: " + projectVersion);
 
-    final int takeHowMany = version.length() - 1;
+    final int takeHowMany = numberBasedVersion.length() - 1;
 
     final ImmutableList<Integer> projectVersionNumbers = projectVersion.getVersionNumbers()
         .subList(0, takeHowMany);
-    final ImmutableList<Integer> projectVersionNumbersFromBuildNumberFile = version.getVersionNumbers()
+    final ImmutableList<Integer> projectVersionNumbersFromBuildNumberFile = numberBasedVersion.getVersionNumbers()
         .subList(0, takeHowMany);
 
     final int lastNumber =
-      equal(projectVersionNumbers, projectVersionNumbersFromBuildNumberFile) ? version.getVersionNumbers()
+      equal(projectVersionNumbers, projectVersionNumbersFromBuildNumberFile) ? numberBasedVersion.getVersionNumbers()
           .get(takeHowMany)
           .intValue() : -1;
 
